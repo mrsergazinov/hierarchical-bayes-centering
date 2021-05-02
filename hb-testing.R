@@ -1,5 +1,6 @@
 # load libraries
 library(rstan)
+library(bayesplot)
 library(tidyverse)
 library(ggplot2)
 library(HLMdiag)
@@ -26,10 +27,12 @@ fit1 <- stan(
 )
 
 np <- nuts_params(fit1)
-mcmc_pairs(
+plt1 <- mcmc_pairs(
     posterior,
     np = np,
     pars = c("sigma_a", "sigma_b", "mu_a", "mu_b"),
     diag_fun = c("dens"),
-    off_diag_fun = c("hex"),
-)
+    off_diag_fun = c("hex"))
+plt2 <- mcmc_rhat(rhat(fit1, pars = c("sigma_b", "mu_b", "mu_a", "sigma_a"))) + yaxis_text(hjust = 1)
+plt3 <- mcmc_neff(neff_ratio(fit1, pars = c("sigma_b", "mu_b", "mu_a", "sigma_a"))) + yaxis_text(hjust = 1)
+plt4 <- mcmc_acf(fit1, pars = c("sigma_b", "mu_b", "mu_a", "sigma_a"), lags = 10)

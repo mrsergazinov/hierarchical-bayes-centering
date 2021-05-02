@@ -5,7 +5,6 @@ data {
   vector[N] x;
   int county[N];
 }
-
 parameters {
   real<lower=0> sigma;
   real<lower=0> sigma_a;
@@ -15,7 +14,6 @@ parameters {
   real mu_a;
   real mu_b;
 }
-
 model {
   mu_a ~ normal(0, 100);
   mu_b ~ normal(0, 100);
