@@ -25,7 +25,6 @@ data = list(J = radon$county %>% n_distinct(),
             x = radon$basement,
             county = radon$county)
 
-
 # fit the models
 fit_c <- stan(
   file = "example2_radon_data/hb-centering.stan",  # Stan program
@@ -37,7 +36,7 @@ fit_c <- stan(
   refresh = 1             # progress shown
 )
 fit_nc <- stan(
-  file = "example2_radon_datahb-non-centering.stan",  # Stan program
+  file = "example2_radon_data/hb-non-centering.stan",  # Stan program
   data = data,    # named list of data
   chains = 4,             # number of Markov chains
   warmup = 2000,          # number of warmup iterations per chain
@@ -46,34 +45,23 @@ fit_nc <- stan(
   refresh = 1             # progress shown
 )
 
-# plot the centered model
+# extract NUTS info
 np_c <- nuts_params(fit_c)
-plt2 <- mcmc_scatter(
+np_nc <- nuts_params(fit_nc)
+# plot scatter plots of b[75] and sigma_b
+plt_c_scatter <- mcmc_scatter(
   fit_c,
-  pars = c("mu_b", "sigma_b"),
+  pars = c("b[75]", "sigma_b"),
   np = np_c,
   size = 1)
-
-# plot the non-centered model
-np_nc <- nuts_params(fit_nc)
-plt6 <- mcmc_pairs(
+plt_nc_scatter <- mcmc_scatter(
   fit_nc,
-  np = np_nc,
-  pars = c("mu_a", "mu_b", "sigma_a", "sigma_b"),
-  diag_fun = c("dens"),
-  off_diag_fun = c("hex"))
-plt7 <- mcmc_scatter(
-  fit_nc,
-  pars = c("mu_b", "sigma_b"),
+  pars = c("b[75]", "sigma_b"),
   np = np_nc,
   size = 1)
-plt8 <- mcmc_rhat(rhat(fit_nc, pars = c("mu_a", "mu_b", "sigma_a", "sigma_b"))) + yaxis_text(hjust = 1)
-plt9 <- mcmc_neff(neff_ratio(fit_nc, pars = c("mu_a", "mu_b", "sigma_a", "sigma_b"))) + yaxis_text(hjust = 1)
-plt10 <- mcmc_acf(fit_nc, pars = c("mu_a", "mu_b", "sigma_a", "sigma_b"))
-
 # compare centered and non-centered models densities for sigma_bs
 dt_cp = as.data.frame(fit_c)
 dt_ncp = as.data.frame(fit_nc)
 dt_den_sigmab = data.frame(value = c(dt_cp$sigma_b, dt_ncp$sigma_b),
                            variable = rep(c("sigma_b_cp", "sigma_b_ncp"), each = length(dt_cp$sigma_b)))
-ggplot(dt_den_sigmab, aes(x = value, fill = variable)) + geom_density(alpha = 0.2)
+ggplot(dt_den_sigmab, aes(x = value, fill = variable)) + geom_density(alpha = 0.2) +theme_bw()
